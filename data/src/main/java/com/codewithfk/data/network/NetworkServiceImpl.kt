@@ -32,6 +32,14 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
         )
     }
 
+    override suspend fun getCategories(): ResultWrapper<List<String>> {
+        val url = "$baseUrl/products/categories"
+        return makeWebRequest<List<String>, List<String>>(
+            url = url,
+            method = HttpMethod.Get,
+        )
+    }
+
     @OptIn(InternalAPI::class)
     suspend inline fun <reified T, R> makeWebRequest(
         url: String,
