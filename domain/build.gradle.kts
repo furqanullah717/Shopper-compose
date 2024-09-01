@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    kotlin("plugin.serialization") version "1.8.0"
+    id("kotlin-parcelize")
+
 }
 
 android {
@@ -41,4 +44,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     api(libs.koin.core)
+    implementation(libs.kotlinx.serialization.json)
+
 }

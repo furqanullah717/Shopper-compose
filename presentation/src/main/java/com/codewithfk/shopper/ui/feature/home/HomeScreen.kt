@@ -2,6 +2,7 @@ package com.codewithfk.shopper.ui.feature.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,10 +41,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCbrt
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.codewithfk.domain.model.Product
+import com.codewithfk.shopper.navigation.ProductDetails
 import com.codewithfk.shopper.R
 import org.koin.androidx.compose.koinViewModel
 
@@ -94,13 +95,16 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
                     error.value = errorMsg
                 }
             }
-            HomeContent(
-                feature.value,
+            HomeContent(feature.value,
                 popular.value,
                 categories.value,
                 loading.value,
-                error.value
-            )
+                error.value,
+                onItemClick = {
+                    navController.navigate(ProductDetails(it))
+                },
+                onCategoryClicked = {
+                })
         }
     }
 }
@@ -153,7 +157,9 @@ fun HomeContent(
     popularProducts: List<Product>,
     categories: List<String>,
     isLoading: Boolean = false,
-    errorMsg: String? = null
+    errorMsg: String? = null,
+    onItemClick: (Product) -> Unit,
+    onCategoryClicked: (String) -> Unit
 ) {
     LazyColumn {
         item {
@@ -179,28 +185,31 @@ fun HomeContent(
             if (categories.isNotEmpty()) {
                 LazyRow {
                     items(categories) { category ->
-                        Text(
-                            text = category.replaceFirstChar { it.uppercase() },
+                        Text(text = category.replaceFirstChar { it.uppercase() },
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .clip(RoundedCornerShape(8.dp))
+                                .clickable { onCategoryClicked(category) }
                                 .background(MaterialTheme.colorScheme.primary)
-                                .padding(8.dp)
-                        )
+                                .padding(8.dp))
                     }
 
                 }
                 Spacer(modifier = Modifier.size(16.dp))
             }
             if (featured.isNotEmpty()) {
-                HomeProductRow(products = featured, title = "Featured")
+                HomeProductRow(products = featured, title = "Featured", onItemClick = onItemClick)
                 Spacer(modifier = Modifier.size(16.dp))
             }
             if (popularProducts.isNotEmpty()) {
-                HomeProductRow(products = popularProducts, title = "Popular Products")
+                HomeProductRow(
+                    products = popularProducts,
+                    title = "Popular Products",
+                    onItemClick = onItemClick
+                )
             }
         }
     }
@@ -237,7 +246,7 @@ fun SearchBar(value: String, onTextChanged: (String) -> Unit) {
 }
 
 @Composable
-fun HomeProductRow(products: List<Product>, title: String) {
+fun HomeProductRow(products: List<Product>, title: String, onItemClick: (Product) -> Unit) {
     Column {
         Box(
             modifier = Modifier
@@ -264,7 +273,7 @@ fun HomeProductRow(products: List<Product>, title: String) {
         Spacer(modifier = Modifier.size(8.dp))
         LazyRow {
             items(products) { product ->
-                ProductItem(product = product)
+                ProductItem(product = product, onItemClick = onItemClick)
             }
         }
     }
@@ -272,11 +281,14 @@ fun HomeProductRow(products: List<Product>, title: String) {
 
 
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(product: Product, onItemClick: (Product) -> Unit) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp)
-            .size(width = 126.dp, height = 144.dp),
+            .size(width = 126.dp, height = 144.dp)
+            .clickable {
+                onItemClick(product)
+            },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.3f))
     ) {
