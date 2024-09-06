@@ -197,7 +197,7 @@ fun ProductDetailsScreenPreview() {
                 description = "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description." + "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description." + "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description.",
                 price = 100.0,
                 image = "https://picsum.photos/200/300",
-                category = "electronics",
+                categoryId = 1,
             )
         )
     }

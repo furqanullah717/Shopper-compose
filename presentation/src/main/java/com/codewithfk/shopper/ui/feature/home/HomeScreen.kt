@@ -1,5 +1,13 @@
 package com.codewithfk.shopper.ui.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,9 +37,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,11 +52,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.codewithfk.domain.model.Product
-import com.codewithfk.shopper.navigation.ProductDetails
+import com.codewithfk.shopper.navigation.NavRoutes.ProductDetails
 import com.codewithfk.shopper.R
 import org.koin.androidx.compose.koinViewModel
 
@@ -84,7 +97,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
                     val data = (uiState.value as HomeScreenUIEvents.Success)
                     feature.value = data.featured
                     popular.value = data.popularProducts
-                    categories.value = data.categories
+                    categories.value = data.categories.map { it.title }
                     loading.value = false
                     error.value = null
                 }
@@ -161,40 +174,56 @@ fun HomeContent(
     onItemClick: (Product) -> Unit,
     onCategoryClicked: (String) -> Unit
 ) {
-    LazyColumn {
-        item {
-            ProfileHeader()
-            Spacer(modifier = Modifier.size(16.dp))
-            SearchBar(value = "", onTextChanged = {})
-            Spacer(modifier = Modifier.size(16.dp))
-        }
-        item {
-            if (isLoading) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(50.dp))
-                    Text(text = "Loading...", style = MaterialTheme.typography.bodyMedium)
-                }
+    Column {
+
+        ProfileHeader()
+        Spacer(modifier = Modifier.size(16.dp))
+        SearchBar(value = "", onTextChanged = {})
+        Spacer(modifier = Modifier.size(16.dp))
+
+        if (isLoading) {
+            Column(
+                modifier = Modifier.fillMaxSize().weight(1f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+                Text(text = "Loading...", style = MaterialTheme.typography.bodyMedium)
             }
-            errorMsg?.let {
-                Text(text = it, style = MaterialTheme.typography.bodyMedium)
+        } else if (errorMsg != null) {
+            Column(
+                modifier = Modifier.fillMaxSize().weight(1f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = errorMsg, style = MaterialTheme.typography.bodyMedium)
             }
+        } else {
             if (categories.isNotEmpty()) {
                 LazyRow {
-                    items(categories) { category ->
-                        Text(text = category.replaceFirstChar { it.uppercase() },
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { onCategoryClicked(category) }
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(8.dp))
+                    items(categories,
+                        key = { it }) { category ->
+                        var isVisible by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) {
+                            isVisible = true
+                        }
+
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = fadeIn() + expandHorizontally()
+                        ) {
+                            Text(text = category.replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onCategoryClicked(category) }
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .padding(8.dp)
+                                    .animateItem())
+                        }
                     }
 
                 }
@@ -271,9 +300,21 @@ fun HomeProductRow(products: List<Product>, title: String, onItemClick: (Product
             )
         }
         Spacer(modifier = Modifier.size(8.dp))
-        LazyRow {
-            items(products) { product ->
-                ProductItem(product = product, onItemClick = onItemClick)
+        LazyRow() {
+            items(products,
+                key = { it }) { product ->
+                var isVisible by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) {
+                    isVisible = true
+                }
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn() + expandVertically()
+                ) {
+                    ProductItem(
+                        Modifier.animateItem(), product = product, onItemClick = onItemClick
+                    )
+                }
             }
         }
     }
@@ -281,9 +322,9 @@ fun HomeProductRow(products: List<Product>, title: String, onItemClick: (Product
 
 
 @Composable
-fun ProductItem(product: Product, onItemClick: (Product) -> Unit) {
+fun ProductItem(modifier: Modifier, product: Product, onItemClick: (Product) -> Unit) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 8.dp)
             .size(width = 126.dp, height = 144.dp)
             .clickable {
@@ -299,6 +340,8 @@ fun ProductItem(product: Product, onItemClick: (Product) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(96.dp)
+                    .background(Color.White),
+                contentScale = ContentScale.Inside
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(

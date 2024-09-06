@@ -4,6 +4,8 @@ import com.codewithfk.domain.model.Product
 import kotlinx.serialization.Serializable
 
 @Serializable
+sealed class NavRoutes {
+@Serializable
 object HomeScreen
 
 @Serializable
@@ -14,3 +16,4 @@ object ProfileScreen
 
 @Serializable
 data class ProductDetails(val product: Product)
+}

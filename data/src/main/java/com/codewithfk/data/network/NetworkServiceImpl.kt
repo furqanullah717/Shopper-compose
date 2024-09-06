@@ -1,7 +1,7 @@
 package com.codewithfk.data.network
 
-import com.codewithfk.data.model.DataProductModel
-import com.codewithfk.domain.model.Product
+import com.codewithfk.domain.model.response.CategoryResponse
+import com.codewithfk.domain.model.response.ProductResponse
 import com.codewithfk.domain.network.NetworkService
 import com.codewithfk.domain.network.ResultWrapper
 import io.ktor.client.HttpClient
@@ -18,23 +18,20 @@ import io.ktor.util.InternalAPI
 import io.ktor.utils.io.errors.IOException
 
 class NetworkServiceImpl(val client: HttpClient) : NetworkService {
-    private val baseUrl = "https://fakestoreapi.com"
-    override suspend fun getProducts(category: String?): ResultWrapper<List<Product>> {
+    private val baseUrl = "https://ecommerce-ktor-4641e7ff1b63.herokuapp.com"
+    override suspend fun getProducts(category: Int?): ResultWrapper<ProductResponse> {
         val url =
-            if (category != null) "$baseUrl/products/category/$category" else "$baseUrl/products"
+            if (category != null) "$baseUrl/products/category/$category" else "$baseUrl/products/category/1"
 
-        return makeWebRequest(
+        return makeWebRequest<ProductResponse, ProductResponse>(
             url = url,
-            method = HttpMethod.Get,
-            mapper = { dataModels: List<DataProductModel> ->
-                dataModels.map { it.toProduct() }
-            }
-        )
+            method = HttpMethod.Get
+            )
     }
 
-    override suspend fun getCategories(): ResultWrapper<List<String>> {
-        val url = "$baseUrl/products/categories"
-        return makeWebRequest<List<String>, List<String>>(
+    override suspend fun getCategories(): ResultWrapper<CategoryResponse> {
+        val url = "$baseUrl/categories"
+        return makeWebRequest<CategoryResponse, CategoryResponse>(
             url = url,
             method = HttpMethod.Get,
         )

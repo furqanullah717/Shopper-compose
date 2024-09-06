@@ -30,11 +30,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.codewithfk.domain.model.Product
-import com.codewithfk.shopper.navigation.CartScreen
-import com.codewithfk.shopper.navigation.HomeScreen
+import com.codewithfk.shopper.navigation.NavRoutes.CartScreen
+import com.codewithfk.shopper.navigation.NavRoutes.HomeScreen
 import com.codewithfk.shopper.navigation.ProductDetailNavType
-import com.codewithfk.shopper.navigation.ProductDetails
-import com.codewithfk.shopper.navigation.ProfileScreen
+import com.codewithfk.shopper.navigation.NavRoutes.ProductDetails
+import com.codewithfk.shopper.navigation.NavRoutes.ProfileScreen
 import com.codewithfk.shopper.ui.feature.home.HomeScreen
 import com.codewithfk.shopper.ui.feature.product_details.ProductDetailsScreen
 import com.codewithfk.shopper.ui.theme.ShopperTheme
@@ -113,7 +113,7 @@ fun BottomNavigationBar(navController: NavController) {
 
         items.forEach { item ->
             NavigationBarItem(
-                selected = currentRoute == item.route,
+                selected = currentRoute?.substringBefore("?") == item.route::class.qualifiedName,
                 onClick = {
                     navController.navigate(item.route) {
                         navController.graph.startDestinationRoute?.let { startRoute ->
@@ -143,8 +143,8 @@ fun BottomNavigationBar(navController: NavController) {
     }
 }
 
-sealed class BottomNavItems(val route: String, val title: String, val icon: Int) {
-    object Home : BottomNavItems("home", "Home", icon = R.drawable.ic_home)
-    object Cart : BottomNavItems("cart", "Cart", icon = R.drawable.ic_cart)
-    object Profile : BottomNavItems("profile", "Profile", icon = R.drawable.ic_profile_bn)
+sealed class BottomNavItems(val route: Any, val title: String, val icon: Int) {
+    object Home : BottomNavItems(HomeScreen, "Home", icon = R.drawable.ic_home)
+    object Cart : BottomNavItems(CartScreen, "Cart", icon = R.drawable.ic_cart)
+    object Profile : BottomNavItems(ProfileScreen, "Profile", icon = R.drawable.ic_profile_bn)
 }
