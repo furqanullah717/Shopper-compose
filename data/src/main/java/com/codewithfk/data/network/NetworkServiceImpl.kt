@@ -1,7 +1,12 @@
 package com.codewithfk.data.network
 
+import com.codewithfk.data.model.CategoryDataModel
 import com.codewithfk.data.model.DataProductModel
+import com.codewithfk.data.model.response.CategoriesListResponse
+import com.codewithfk.data.model.response.ProductListResponse
+import com.codewithfk.domain.model.CategoriesListModel
 import com.codewithfk.domain.model.Product
+import com.codewithfk.domain.model.ProductListModel
 import com.codewithfk.domain.network.NetworkService
 import com.codewithfk.domain.network.ResultWrapper
 import io.ktor.client.HttpClient
@@ -18,26 +23,24 @@ import io.ktor.util.InternalAPI
 import io.ktor.utils.io.errors.IOException
 
 class NetworkServiceImpl(val client: HttpClient) : NetworkService {
-    private val baseUrl = "https://fakestoreapi.com"
-    override suspend fun getProducts(category: String?): ResultWrapper<List<Product>> {
+    private val baseUrl = "https://ecommerce-ktor-4641e7ff1b63.herokuapp.com"
+    override suspend fun getProducts(category: Int?): ResultWrapper<ProductListModel> {
         val url =
             if (category != null) "$baseUrl/products/category/$category" else "$baseUrl/products"
-
-        return makeWebRequest(
-            url = url,
+        return makeWebRequest(url = url,
             method = HttpMethod.Get,
-            mapper = { dataModels: List<DataProductModel> ->
-                dataModels.map { it.toProduct() }
-            }
-        )
+            mapper = { dataModels: ProductListResponse ->
+                dataModels.toProductList()
+            })
     }
 
-    override suspend fun getCategories(): ResultWrapper<List<String>> {
-        val url = "$baseUrl/products/categories"
-        return makeWebRequest<List<String>, List<String>>(
-            url = url,
+    override suspend fun getCategories(): ResultWrapper<CategoriesListModel> {
+        val url = "$baseUrl/categories"
+        return makeWebRequest(url = url,
             method = HttpMethod.Get,
-        )
+            mapper = { categories: CategoriesListResponse ->
+                categories.toCategoriesList()
+            })
     }
 
     @OptIn(InternalAPI::class)
