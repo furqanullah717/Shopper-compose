@@ -15,7 +15,8 @@ material = "1.12.0"
 koin = "4.0.0-RC1"
 #ktor
 ktor = "2.3.2"
-navigaitonCompose = "2.7.7"
+navigaitonCompose = "2.8.0-alpha08"
+serialization = "1.6.3"
 
 
 [libraries]
@@ -36,6 +37,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 
 #koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
