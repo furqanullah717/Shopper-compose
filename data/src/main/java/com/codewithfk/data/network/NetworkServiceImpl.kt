@@ -1,5 +1,9 @@
 package com.codewithfk.data.network
 
+import com.codewithfk.data.model.DataProductModel
+import com.codewithfk.domain.model.Product
+import com.codewithfk.domain.model.request.AddToCartRequest
+import com.codewithfk.domain.model.response.CartResponse
 import com.codewithfk.domain.model.response.CategoryResponse
 import com.codewithfk.domain.model.response.ProductResponse
 import com.codewithfk.domain.network.NetworkService
@@ -10,6 +14,7 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.header
 import io.ktor.client.request.request
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
@@ -26,7 +31,7 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
         return makeWebRequest<ProductResponse, ProductResponse>(
             url = url,
             method = HttpMethod.Get
-            )
+        )
     }
 
     override suspend fun getCategories(): ResultWrapper<CategoryResponse> {
@@ -37,7 +42,32 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
         )
     }
 
-    @OptIn(InternalAPI::class)
+    override suspend fun getCart(userId: Int): ResultWrapper<CartResponse> {
+        val url = "$baseUrl/cart/$userId"
+        return makeWebRequest<CartResponse, CartResponse>(
+            url = url,
+            method = HttpMethod.Get
+        )
+    }
+
+    override suspend fun addProductToCart(
+        product: Product,
+        userId: Int
+    ): ResultWrapper<CartResponse> {
+        val url = "$baseUrl/cart/$userId"
+        return makeWebRequest<CartResponse, CartResponse>(
+            url = url,
+            method = HttpMethod.Post,
+            body = AddToCartRequest(
+                productId = product.id.toInt(),
+                productName = product.title,
+                price = product.price,
+                quantity = 1,
+                userId = userId
+            )
+        )
+    }
+
     suspend inline fun <reified T, R> makeWebRequest(
         url: String,
         method: HttpMethod,
@@ -63,7 +93,7 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
                 }
                 // Set body for POST, PUT, etc.
                 if (body != null) {
-                    this.body = body
+                    setBody(body)
                 }
 
                 // Set content type
