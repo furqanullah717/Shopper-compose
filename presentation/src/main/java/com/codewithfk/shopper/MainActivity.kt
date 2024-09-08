@@ -40,6 +40,7 @@ import com.codewithfk.shopper.navigation.HomeScreen
 import com.codewithfk.shopper.navigation.ProductDetails
 import com.codewithfk.shopper.navigation.ProfileScreen
 import com.codewithfk.shopper.navigation.productNavType
+import com.codewithfk.shopper.ui.feature.cart.CartScreen
 import com.codewithfk.shopper.ui.feature.home.HomeScreen
 import com.codewithfk.shopper.ui.feature.product_details.ProductDetailsScreen
 import com.codewithfk.shopper.ui.theme.ShopperTheme
@@ -76,9 +77,7 @@ class MainActivity : ComponentActivity() {
                             }
                             composable<CartScreen> {
                                 shouldShowBottomNav.value = true
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Text(text = "Cart")
-                                }
+                                CartScreen(navController)
                             }
                             composable<ProfileScreen> {
                                 shouldShowBottomNav.value = true
