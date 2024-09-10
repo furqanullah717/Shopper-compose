@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +44,7 @@ import com.codewithfk.shopper.ui.theme.ShopperTheme
 import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -51,47 +54,51 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(false)
                 }
                 val navController = rememberNavController()
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        AnimatedVisibility(visible = showBottomNav.value) {
-                            BottomNavigationBar(navController)
+                SharedTransitionLayout {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        bottomBar = {
+                            AnimatedVisibility(visible = showBottomNav.value) {
+                                BottomNavigationBar(navController)
+                            }
                         }
-                    }
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(it)
                     ) {
-                        NavHost(navController = navController, startDestination = HomeScreen) {
-                            composable<HomeScreen> {
-                                HomeScreen(navController)
-                                showBottomNav.value = true
-                            }
-                            composable<CartScreen> {
-                                showBottomNav.value = true
-                                CartScreen(navController)
-                            }
-                            composable<ProfileScreen> {
-                                showBottomNav.value = true
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Text(text = "Profile")
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(it)
+                        ) {
+                            NavHost(navController = navController, startDestination = HomeScreen) {
+                                composable<HomeScreen> {
+                                    HomeScreen(navController, this)
+                                    showBottomNav.value = true
                                 }
-                            }
-                            composable<ProductDetails>(
-                                typeMap = mapOf(typeOf<Product>() to ProductDetailNavType),
-                            ) {
-                                showBottomNav.value = false
-                                val arg = it.toRoute<ProductDetails>()
-                                ProductDetailsScreen(
-                                    navController = navController,
-                                    product = arg.product
-                                )
+                                composable<CartScreen> {
+                                    showBottomNav.value = true
+                                    CartScreen(navController)
+                                }
+                                composable<ProfileScreen> {
+                                    showBottomNav.value = true
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        Text(text = "Profile")
+                                    }
+                                }
+                                composable<ProductDetails>(
+                                    typeMap = mapOf(typeOf<Product>() to ProductDetailNavType),
+                                ) {
+                                    showBottomNav.value = false
+                                    val arg = it.toRoute<ProductDetails>()
+                                    ProductDetailsScreen(
+                                        navController = navController,
+                                        product = arg.product,
+                                        animatedVisibilityScope = this
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
 
             }
         }

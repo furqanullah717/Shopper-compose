@@ -73,5 +73,6 @@ dependencies {
     implementation(libs.compose.navigation)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.animation)   // Animations in Compose
 
 }

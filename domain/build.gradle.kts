@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     kotlin("plugin.serialization") version "1.8.0"
     id("kotlin-parcelize")
-
 }
 
 android {

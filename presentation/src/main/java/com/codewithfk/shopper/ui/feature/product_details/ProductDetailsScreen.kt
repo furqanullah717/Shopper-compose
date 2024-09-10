@@ -1,6 +1,11 @@
 package com.codewithfk.shopper.ui.feature.product_details
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,9 +48,11 @@ import com.codewithfk.shopper.R
 import com.codewithfk.shopper.ui.theme.ShopperTheme
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun ProductDetailsScreen(
+fun SharedTransitionScope.ProductDetailsScreen(
     navController: NavController,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     product: Product,
     viewModel: ProductDetailsViewModel = koinViewModel()
 ) {
@@ -76,8 +83,6 @@ fun ProductDetailsScreen(
         }
     }
     Box {
-
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,7 +120,15 @@ fun ProductDetailsScreen(
                 AsyncImage(
                     model = product.image,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .sharedElement(
+                            state = rememberSharedContentState(key = "image/${product.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = { _, _ ->
+                                tween(durationMillis = 300)
+                            }
+                        ),
                     contentScale = androidx.compose.ui.layout.ContentScale.Crop
                 )
             }
@@ -132,7 +145,15 @@ fun ProductDetailsScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .sharedElement(
+                                state = rememberSharedContentState(key = "title/${product.id}"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = { _, _ ->
+                                    tween(durationMillis = 300)
+                                }
+                            ),
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Text(
@@ -140,6 +161,13 @@ fun ProductDetailsScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.sharedElement(
+                            state = rememberSharedContentState(key = "price/${product.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = { _, _ ->
+                                tween(durationMillis = 300)
+                            }
+                        )
                     )
                 }
                 Row(
@@ -196,25 +224,32 @@ fun ProductDetailsScreen(
                 }
 
                 Spacer(modifier = Modifier.size(16.dp))
-                Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Button(
-                        onClick = { viewModel.addProductToCart(product) },
-                        modifier = Modifier.weight(0.75f)
-                    ) {
-                        Text(text = "Buy Now")
-                    }
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Button(
-                        onClick = { viewModel.addProductToCart(product) },
-                        modifier = Modifier.weight(0.25f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray.copy(alpha = 0.3f))
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_cart),
-                            contentDescription = null
-                        )
+                AnimatedVisibility(true) {
+                    Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Button(
+                            onClick = { viewModel.addProductToCart(product) },
+                            modifier = Modifier.weight(0.75f)
+                        ) {
+                            Text(text = "Buy Now")
+                        }
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Button(
+                            onClick = { viewModel.addProductToCart(product) },
+                            modifier = Modifier.weight(0.25f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Gray.copy(
+                                    alpha = 0.3f
+                                )
+                            )
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_cart),
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
+
             }
         }
         if (loading.value) {
@@ -255,21 +290,4 @@ fun SelectionType(title: String) {
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
             .padding(8.dp)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProductDetailsScreenPreview() {
-    ShopperTheme {
-        ProductDetailsScreen(
-            navController = rememberNavController(), product = Product(
-                id = 1,
-                title = "Product Title",
-                description = "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description." + "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description." + "Product Description lorem ipsum Contains a lot of text and information about the product. and it is a long description.",
-                price = 100.0,
-                image = "https://picsum.photos/200/300",
-                categoryId = 1,
-            )
-        )
-    }
 }
