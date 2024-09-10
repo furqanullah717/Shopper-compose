@@ -1,5 +1,6 @@
 package com.codewithfk.domain.network
 
+import com.codewithfk.domain.model.CartItem
 import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.model.response.CartResponse
 import com.codewithfk.domain.model.response.CategoryResponse
@@ -10,6 +11,8 @@ interface NetworkService {
     suspend fun getCategories(): ResultWrapper<CategoryResponse>
     suspend fun addProductToCart(product: Product, userId: Int): ResultWrapper<CartResponse>
     suspend fun getCart(userId: Int): ResultWrapper<CartResponse>
+    suspend fun updateQuantity(cartItem: CartItem, userId: Int): ResultWrapper<CartResponse>
+    suspend fun removeProductFromCart(cartItemId: Int, userId: Int): ResultWrapper<CartResponse>
 }
 
 sealed class ResultWrapper<out T> {

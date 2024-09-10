@@ -2,7 +2,9 @@ package com.codewithfk.shopper.ui.feature.cart
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -20,15 +22,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +58,7 @@ fun CartScreen(
     navController: NavController,
     viewModel: CartViewModel = koinViewModel(),
 ) {
+    var showBottomSheet by remember { mutableStateOf(false) }
     val cartItems = viewModel.cartItems.collectAsState()
     val loading = remember {
         mutableStateOf(false)
@@ -67,23 +74,24 @@ fun CartScreen(
             is CartEvent.Loading -> {
                 loading.value = true
                 errorMsg.value = null
+                showBottomSheet = false
             }
 
             is CartEvent.Error -> {
                 loading.value = false
                 errorMsg.value = (cartItems.value as CartEvent.Error).message
+                showBottomSheet = true
             }
 
             is CartEvent.Success -> {
-                loading.value = false
                 val data = (cartItems.value as CartEvent.Success).cartItems
-                if (data.isEmpty()) {
-                    errorMsg.value = "No items in cart"
-                } else {
-                    items.value = data
-                    errorMsg.value = null
-                }
+                items.value = data
+                loading.value = false
+                showBottomSheet = false
+                errorMsg.value = null
+
             }
+
         }
     }
 
@@ -112,22 +120,35 @@ fun CartScreen(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                val shouldShowList = !loading.value && errorMsg.value == null
+                val shouldShowList = items.value.isNotEmpty()
                 AnimatedVisibility(
-                    shouldShowList, Modifier
-                        .weight(1f)
+                    shouldShowList, Modifier.weight(1f)
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
 
-                        (cartItems.value as? CartEvent.Success)?.cartItems?.let {
+                        items.value.let {
                             LazyColumn {
-                                items(it) { cartItem ->
+                                items(
+                                    it,
+                                    key = { it.id }
+                                ) { cartItem ->
                                     CartItemRow(modifier = Modifier.animateItem(),
                                         cartItem = cartItem,
-                                        onRemoveClick = { })
+                                        onRemoveClick = {
+                                            viewModel.deleteItem(it)
+                                        },
+                                        onQuantityAdd = {
+                                            if (cartItems.value is CartEvent.Loading) return@CartItemRow
+                                            viewModel.increaseQuantity(it)
+                                        },
+                                        onQuantityRemove = {
+                                            if (cartItems.value is CartEvent.Loading) return@CartItemRow
+                                            viewModel.decreaseQuantity(it)
+                                        }
+
+                                    )
                                 }
 
                             }
@@ -142,26 +163,71 @@ fun CartScreen(
                     }
                 }
             }
-            AnimatedVisibility(loading.value, enter = fadeIn()) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Column(modifier = Modifier.align(Alignment.Center)) {
+            AnimatedVisibility(loading.value, enter = fadeIn(), exit = fadeOut()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Color.Black.copy(alpha = 0.6f)
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         CircularProgressIndicator(modifier = Modifier.size(50.dp))
                         Text(text = "Loading...")
                     }
                 }
             }
-            AnimatedVisibility(errorMsg.value != null,enter = fadeIn()) {
+            AnimatedVisibility(
+                items.value.isEmpty() && cartItems.value !is CartEvent.Loading, enter = fadeIn()
+            ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    Text(text = errorMsg.value!!, modifier = Modifier.align(Alignment.Center))
+                    Text(text = "No Item in cart", modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
+    }
+
+    // Bottom sheet dialog for API errors
+    if (showBottomSheet) {
+        ModalBottomSheet(sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            content = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Error",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(text = errorMsg.value ?: "An unexpected error occurred.")
+                    Button(
+                        onClick = {
+                            showBottomSheet = false  // Dismiss the bottom sheet
+                        }, modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(text = "Dismiss")
+                    }
+                }
+            })
     }
 }
 
 @Composable
 fun CartItemRow(
-    modifier: Modifier = Modifier, cartItem: CartItem, onRemoveClick: () -> Unit
+    modifier: Modifier = Modifier,
+    cartItem: CartItem,
+    onRemoveClick: (CartItem) -> Unit,
+    onQuantityAdd: (CartItem) -> Unit,
+    onQuantityRemove: (CartItem) -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -183,8 +249,7 @@ fun CartItemRow(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.Center
+                .fillMaxHeight(), verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -203,7 +268,7 @@ fun CartItemRow(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.End
         ) {
-            IconButton(onClick = onRemoveClick) {
+            IconButton(onClick = { onRemoveClick(cartItem) }) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_delete),
                     contentDescription = "Remove"
@@ -213,7 +278,10 @@ fun CartItemRow(
 
             //quanitity with + and - circle button
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { }) {
+                IconButton(onClick = {
+                    onQuantityAdd(cartItem)
+
+                }) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_add),
                         contentDescription = "Add"
@@ -222,7 +290,9 @@ fun CartItemRow(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = cartItem.quantity.toString())
                 Spacer(modifier = Modifier.width(8.dp))
-                IconButton(onClick = { }) {
+                IconButton(onClick = {
+                    onQuantityRemove(cartItem)
+                }) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_subtract),
                         contentDescription = "Remove"

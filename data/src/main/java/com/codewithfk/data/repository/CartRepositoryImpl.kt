@@ -1,5 +1,6 @@
 package com.codewithfk.data.repository
 
+import android.util.Log
 import com.codewithfk.domain.model.CartItem
 import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.model.response.CartResponse
@@ -15,9 +16,22 @@ class CartRepositoryImpl(private val networkService: NetworkService) : CartRepos
     }
 
     override suspend fun addProductToCart(
-        product: Product,
-        userId: Int
+        product: Product, userId: Int
     ): ResultWrapper<CartResponse> {
         return networkService.addProductToCart(product, userId)
+    }
+
+    override suspend fun removeProductFromCart(
+        cartItemId: Int,
+        userId: Int
+    ): ResultWrapper<CartResponse> {
+        return networkService.removeProductFromCart(cartItemId, userId)
+    }
+
+    override suspend fun updateQuantity(
+        cartItem: CartItem, userId: Int
+    ): ResultWrapper<CartResponse> {
+        Log.d("CartRepositoryImpl", "updateQuantity: $cartItem")
+        return networkService.updateQuantity(cartItem, userId)
     }
 }

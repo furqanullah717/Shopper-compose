@@ -1,6 +1,7 @@
 package com.codewithfk.data.network
 
 import com.codewithfk.data.model.DataProductModel
+import com.codewithfk.domain.model.CartItem
 import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.model.request.AddToCartRequest
 import com.codewithfk.domain.model.response.CartResponse
@@ -47,6 +48,36 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
         return makeWebRequest<CartResponse, CartResponse>(
             url = url,
             method = HttpMethod.Get
+        )
+    }
+
+    override suspend fun updateQuantity(
+        cartItem: CartItem,
+        userId: Int
+    ): ResultWrapper<CartResponse> {
+        val url = "$baseUrl/cart/$userId/${cartItem.id}"
+        return makeWebRequest<CartResponse, CartResponse>(
+            url = url,
+            method = HttpMethod.Put,
+            body = AddToCartRequest(
+                id = cartItem.id,
+                productId = cartItem.productId,
+                productName = cartItem.productName,
+                price = cartItem.price,
+                quantity = cartItem.quantity,
+                userId = userId
+            )
+        )
+    }
+
+    override suspend fun removeProductFromCart(
+        cartItemId: Int,
+        userId: Int
+    ): ResultWrapper<CartResponse> {
+        val url = "$baseUrl/cart/$userId/$cartItemId"
+        return makeWebRequest<CartResponse, CartResponse>(
+            url = url,
+            method = HttpMethod.Delete
         )
     }
 
