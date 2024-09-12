@@ -95,7 +95,7 @@ fun CartScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         val pullToRefreshState = rememberPullToRefreshState()
         if (pullToRefreshState.isRefreshing) {
             LaunchedEffect(true) {
@@ -113,7 +113,8 @@ fun CartScreen(
                 modifier = Modifier
                     .nestedScroll(pullToRefreshState.nestedScrollConnection)
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp)
             ) {
                 Text(
                     text = "Cart",
@@ -121,45 +122,45 @@ fun CartScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 val shouldShowList = items.value.isNotEmpty()
-                AnimatedVisibility(
-                    shouldShowList, Modifier.weight(1f)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
+                items.value.let {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
                     ) {
-
-                        items.value.let {
-                            LazyColumn {
-                                items(
-                                    it,
-                                    key = { it.id }
-                                ) { cartItem ->
-                                    CartItemRow(modifier = Modifier.animateItem(),
-                                        cartItem = cartItem,
-                                        onRemoveClick = {
-                                            viewModel.deleteItem(it)
-                                        },
-                                        onQuantityAdd = {
-                                            if (cartItems.value is CartEvent.Loading) return@CartItemRow
-                                            viewModel.increaseQuantity(it)
-                                        },
-                                        onQuantityRemove = {
-                                            if (cartItems.value is CartEvent.Loading) return@CartItemRow
-                                            viewModel.decreaseQuantity(it)
-                                        }
-
-                                    )
+                        items(it, key = { it.id }) { cartItem ->
+                            CartItemRow(modifier = Modifier.animateItem(),
+                                cartItem = cartItem,
+                                onRemoveClick = {
+                                    viewModel.deleteItem(it)
+                                },
+                                onQuantityAdd = {
+                                    if (cartItems.value is CartEvent.Loading) return@CartItemRow
+                                    viewModel.increaseQuantity(it)
+                                },
+                                onQuantityRemove = {
+                                    if (cartItems.value is CartEvent.Loading) return@CartItemRow
+                                    viewModel.decreaseQuantity(it)
                                 }
 
-                            }
+                            )
                         }
+
                     }
                 }
-                if (shouldShowList) {
+
+                if (shouldShowList && cartItems.value !is CartEvent.Loading) {
                     Button(
                         onClick = { }, modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(text = "Proceed to Checkout")
+                    }
+                }
+                AnimatedVisibility(
+                    items.value.isEmpty() && cartItems.value !is CartEvent.Loading, enter = fadeIn()
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(text = "No Item in cart", modifier = Modifier.align(Alignment.Center))
                     }
                 }
             }
@@ -168,7 +169,7 @@ fun CartScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
-                            Color.Black.copy(alpha = 0.6f)
+                            Color.Black.copy(alpha = 0.4f)
                         )
                 ) {
                     Column(
@@ -179,13 +180,6 @@ fun CartScreen(
                         CircularProgressIndicator(modifier = Modifier.size(50.dp))
                         Text(text = "Loading...")
                     }
-                }
-            }
-            AnimatedVisibility(
-                items.value.isEmpty() && cartItems.value !is CartEvent.Loading, enter = fadeIn()
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(text = "No Item in cart", modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
