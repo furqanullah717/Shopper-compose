@@ -61,8 +61,6 @@ fun ProductItem(product: Product) {
             Column {
                 Text(text = product.title, style = MaterialTheme.typography.titleMedium)
                 Text(text = "$${product.price}", style = MaterialTheme.typography.bodyMedium)
-
-
             }
         }
     }
