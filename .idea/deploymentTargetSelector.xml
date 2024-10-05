@@ -7,7 +7,7 @@
       </SelectionState>
       <SelectionState runConfigName="presentation">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-09-07T05:08:10.610354Z">
+        <DropdownSelection timestamp="2024-10-05T16:23:41.218154Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/furqan/.android/avd/Pixel_4_API_30.avd" />

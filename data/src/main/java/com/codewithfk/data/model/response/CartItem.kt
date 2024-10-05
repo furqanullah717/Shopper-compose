@@ -7,10 +7,8 @@ import kotlinx.serialization.Serializable
 class CartItem(
     val id: Int,
     val productId: Int,
-    val userId: Int,
-    val name: String,
     val price: Double,
-    val imageUrl: String?,
+    val imageUrl: String? = null,
     val quantity: Int,
     val productName: String
 ) {
@@ -18,8 +16,6 @@ class CartItem(
         return CartItemModel(
             id = id,
             productId = productId,
-            userId = userId,
-            name = name,
             price = price,
             imageUrl = imageUrl,
             quantity = quantity,
