@@ -27,7 +27,7 @@ val networkModule = module {
                 level = LogLevel.ALL
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Log.d("BackEndHandler", message)
+                        Log.d("SHOPPER_BACKEND", message)
                     }
                 }
             }
