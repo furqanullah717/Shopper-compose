@@ -1,9 +1,24 @@
 package com.codewithfk.domain.network
 
-import com.codewithfk.domain.model.Product
+import com.codewithfk.domain.model.CartItemModel
+import com.codewithfk.domain.model.CartModel
+import com.codewithfk.domain.model.CartSummary
+import com.codewithfk.domain.model.CategoriesListModel
+import com.codewithfk.domain.model.ProductListModel
+import com.codewithfk.domain.model.request.AddCartRequestModel
 
 interface NetworkService {
-    suspend fun getProducts(): ResultWrapper<List<Product>>
+    suspend fun getProducts(category: Int?): ResultWrapper<ProductListModel>
+    suspend fun getCategories(): ResultWrapper<CategoriesListModel>
+
+    suspend fun addProductToCart(
+        request: AddCartRequestModel
+    ): ResultWrapper<CartModel>
+
+    suspend fun getCart(): ResultWrapper<CartModel>
+    suspend fun updateQuantity(cartItemModel: CartItemModel): ResultWrapper<CartModel>
+    suspend fun deleteItem(cartItemId: Int, userId: Int): ResultWrapper<CartModel>
+    suspend fun getCartSummary(userId: Int): ResultWrapper<CartSummary>
 }
 
 sealed class ResultWrapper<out T> {
