@@ -6,6 +6,7 @@ import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.network.ResultWrapper
 import com.codewithfk.domain.usecase.GetCategoriesUseCase
 import com.codewithfk.domain.usecase.GetProductUseCase
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -25,14 +26,32 @@ class HomeViewModel(
     private fun getAllProducts() {
         viewModelScope.launch {
             _uiState.value = HomeScreenUIEvents.Loading
-            val featured = getProducts(1)
-            val popularProducts = getProducts(2)
-            val categories = getCategory()
-            if (featured.isEmpty() && popularProducts.isEmpty() && categories.isNotEmpty()) {
+            /**
+             *  -- To Launch all request's at the same time to get data from server --
+             * async{} will launch all the request's in parallel at the same time
+             * and await() will be wait for the every request result response
+             * using this approach our network calling will be fast and it will take less time to
+             * show the data on screen to user
+             */
+            val featured = async {
+                getProducts(1)
+            }
+            val popularProducts = async {
+                getProducts(2)
+            }
+
+            val categories = async {
+                getCategory()
+            }
+            val featuredResponse = featured.await()
+            val popularProductsResponse = popularProducts.await()
+            val categoriesResponse = categories.await()
+
+            if (featuredResponse.isEmpty() && popularProductsResponse.isEmpty() && categoriesResponse.isNotEmpty()) {
                 _uiState.value = HomeScreenUIEvents.Error("Failed to load products")
                 return@launch
             }
-            _uiState.value = HomeScreenUIEvents.Success(featured, popularProducts, categories)
+            _uiState.value = HomeScreenUIEvents.Success(featuredResponse, popularProductsResponse, categoriesResponse)
         }
     }
 
