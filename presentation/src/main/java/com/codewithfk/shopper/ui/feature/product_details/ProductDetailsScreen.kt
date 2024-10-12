@@ -19,10 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -172,7 +170,7 @@ fun ProductDetailsScreen(
                         .copy(containerColor = Color.LightGray.copy(alpha = 0.4f))
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_cart),
+                        painter = painterResource(id = R.drawable.ic_orders),
                         contentDescription = null
                     )
                 }
