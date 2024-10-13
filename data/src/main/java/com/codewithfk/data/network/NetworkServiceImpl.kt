@@ -3,14 +3,19 @@ package com.codewithfk.data.network
 import com.codewithfk.data.model.CategoryDataModel
 import com.codewithfk.data.model.DataProductModel
 import com.codewithfk.data.model.request.AddToCartRequest
+import com.codewithfk.data.model.request.AddressDataModel
 import com.codewithfk.data.model.response.CartResponse
 import com.codewithfk.data.model.response.CartSummaryResponse
 import com.codewithfk.data.model.response.CategoriesListResponse
+import com.codewithfk.data.model.response.OrdersListResponse
+import com.codewithfk.data.model.response.PlaceOrderResponse
 import com.codewithfk.data.model.response.ProductListResponse
+import com.codewithfk.domain.model.AddressDomainModel
 import com.codewithfk.domain.model.CartItemModel
 import com.codewithfk.domain.model.CartModel
 import com.codewithfk.domain.model.CartSummary
 import com.codewithfk.domain.model.CategoriesListModel
+import com.codewithfk.domain.model.OrdersListModel
 import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.model.ProductListModel
 import com.codewithfk.domain.model.request.AddCartRequestModel
@@ -98,6 +103,26 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             method = HttpMethod.Get,
             mapper = { cartSummary: CartSummaryResponse ->
                 cartSummary.toCartSummary()
+            })
+    }
+
+    override suspend fun placeOrder(address: AddressDomainModel, userId: Int): ResultWrapper<Long> {
+        val dataModel = AddressDataModel.fromDomainAddress(address)
+        val url = "$baseUrl/orders/$userId"
+        return makeWebRequest(url = url,
+            method = HttpMethod.Post,
+            body = dataModel,
+            mapper = { orderRes: PlaceOrderResponse ->
+                orderRes.data.id
+            })
+    }
+
+    override suspend fun getOrderList(): ResultWrapper<OrdersListModel> {
+        val url = "$baseUrl/orders/1"
+        return makeWebRequest(url = url,
+            method = HttpMethod.Get,
+            mapper = { ordersResponse: OrdersListResponse ->
+                ordersResponse.toDomainResponse()
             })
     }
 
