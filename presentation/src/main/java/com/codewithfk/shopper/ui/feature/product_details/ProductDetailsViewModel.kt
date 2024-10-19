@@ -4,16 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codewithfk.domain.model.request.AddCartRequestModel
 import com.codewithfk.domain.usecase.AddToCartUseCase
+import com.codewithfk.shopper.ShopperSession
 import com.codewithfk.shopper.model.UiProductModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ProductDetailsViewModel(val useCase: AddToCartUseCase) : ViewModel() {
+class ProductDetailsViewModel(val useCase: AddToCartUseCase,
+                              private val shopperSession: ShopperSession
+) : ViewModel() {
 
     private val _state = MutableStateFlow<ProductDetailsEvent>(ProductDetailsEvent.Nothing)
     val state = _state.asStateFlow()
-    val userDomainModel = com.codewithfk.shopper.ShopperSession.getUser()
+    val userDomainModel = shopperSession.getUser()
     fun addProductToCart(product: UiProductModel) {
         viewModelScope.launch {
             _state.value = ProductDetailsEvent.Loading
