@@ -34,13 +34,17 @@ import com.codewithfk.shopper.model.UiProductModel
 import com.codewithfk.shopper.navigation.CartScreen
 import com.codewithfk.shopper.navigation.CartSummaryScreen
 import com.codewithfk.shopper.navigation.HomeScreen
+import com.codewithfk.shopper.navigation.LoginScreen
 import com.codewithfk.shopper.navigation.OrdersScreen
 import com.codewithfk.shopper.navigation.ProductDetails
 import com.codewithfk.shopper.navigation.ProfileScreen
+import com.codewithfk.shopper.navigation.RegisterScreen
 import com.codewithfk.shopper.navigation.UserAddressRoute
 import com.codewithfk.shopper.navigation.UserAddressRouteWrapper
 import com.codewithfk.shopper.navigation.productNavType
 import com.codewithfk.shopper.navigation.userAddressNavType
+import com.codewithfk.shopper.ui.feature.account.login.LoginScreen
+import com.codewithfk.shopper.ui.feature.account.register.RegisterScreen
 import com.codewithfk.shopper.ui.feature.cart.CartScreen
 import com.codewithfk.shopper.ui.feature.home.HomeScreen
 import com.codewithfk.shopper.ui.feature.orders.OrdersScreen
@@ -48,6 +52,7 @@ import com.codewithfk.shopper.ui.feature.product_details.ProductDetailsScreen
 import com.codewithfk.shopper.ui.feature.summary.CartSummaryScreen
 import com.codewithfk.shopper.ui.feature.user_address.UserAddressScreen
 import com.codewithfk.shopper.ui.theme.ShopperTheme
+import org.koin.android.ext.android.inject
 import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
@@ -55,6 +60,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val shopperSession : ShopperSession by inject()
             ShopperTheme {
                 val shouldShowBottomNav = remember {
                     mutableStateOf(true)
@@ -74,7 +80,24 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(it)
                     ) {
-                        NavHost(navController = navController, startDestination = HomeScreen) {
+
+                        NavHost(
+                            navController = navController,
+                            startDestination = if (shopperSession.getUser() != null) {
+                                HomeScreen
+                            } else {
+                                LoginScreen
+                            }
+                        ) {
+
+                            composable<LoginScreen> {
+                                shouldShowBottomNav.value = false
+                                LoginScreen(navController)
+                            }
+                            composable<RegisterScreen> {
+                                shouldShowBottomNav.value = false
+                                RegisterScreen(navController)
+                            }
                             composable<HomeScreen> {
                                 HomeScreen(navController)
                                 shouldShowBottomNav.value = true

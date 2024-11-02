@@ -19,6 +19,18 @@ navigaitonCompose = "2.8.0-alpha08"
 serialization = "1.6.3"
 
 
+mockitoCore = "4.0.0"
+mockitoKotlin = "4.0.0"
+mockitoInline = "4.0.0"
+kotlinxCoroutinesTest = "1.9.0"
+koinTest = "3.4.0"
+koinTestJunit4 = "3.1.6"
+
+tracing = "1.2.0"
+uiTestJunit4 = "1.7.4"
+rules = "1.6.1"
+runner = "1.6.2"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
@@ -52,6 +64,21 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 #navigation
 compose-navigation = {module="androidx.navigation:navigation-compose",version.ref = "navigaitonCompose"}
+
+#unit test
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koinTest" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koinTestJunit4" }
+
+ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "uiTestJunit4" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoCore" }
+androidx-core = { module = "androidx.test:core", version.ref = "rules" }
+androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
+androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
+androidx-tracing = { group = "androidx.tracing", name = "tracing", version.ref = "tracing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

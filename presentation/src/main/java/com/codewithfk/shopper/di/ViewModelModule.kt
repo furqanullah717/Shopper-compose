@@ -1,5 +1,7 @@
 package com.codewithfk.shopper.di
 
+import com.codewithfk.shopper.ui.feature.account.login.LoginViewModel
+import com.codewithfk.shopper.ui.feature.account.register.RegisterViewModel
 import com.codewithfk.shopper.ui.feature.cart.CartViewModel
 import com.codewithfk.shopper.ui.feature.home.HomeViewModel
 import com.codewithfk.shopper.ui.feature.orders.OrdersViewModel
@@ -13,15 +15,23 @@ val viewModelModule = module {
         HomeViewModel(get(), get())
     }
     viewModel {
-        ProductDetailsViewModel(get())
+        ProductDetailsViewModel(get(),get())
     }
     viewModel {
-        CartViewModel(get(), get(), get())
+        CartViewModel(get(), get(), get(),get())
     }
     viewModel {
-        CartSummaryViewModel(get(), get())
+        CartSummaryViewModel(get(), get(),get())
     }
     viewModel {
-        OrdersViewModel(get())
+        OrdersViewModel(get(),get())
+    }
+
+    viewModel {
+        LoginViewModel(get(),get())
+    }
+
+    viewModel {
+        RegisterViewModel(get(),get())
     }
 }

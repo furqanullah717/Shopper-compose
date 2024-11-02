@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Acheteur</string>
+    <string name="loading">Chargement…</string>
+    <string name="register">S\'inscrire</string>
+    <string name="alread_have_an_account">Vous avez déjà un compte ? Connexion</string>
+    <string name="password">Mot de passe</string>
+    <string name="email">Email</string>
+    <string name="name">Nom</string>
+    <string name="login">Connexion</string>
+    <string name="dont_have_account">Vous n\'avez pas de compte ? Inscription</string>
+</resources>

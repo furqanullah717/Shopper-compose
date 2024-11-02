@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Shopper</string>
+    <string name="loading">Loading…</string>
+    <string name="register">Register</string>
+    <string name="alread_have_an_account">Already have an account? Login</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="name">Name</string>
+    <string name="login">Login</string>
+    <string name="dont_have_account">Don\'t have an account? Register</string>
 </resources>

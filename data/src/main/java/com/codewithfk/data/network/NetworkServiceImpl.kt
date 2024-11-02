@@ -4,12 +4,16 @@ import com.codewithfk.data.model.CategoryDataModel
 import com.codewithfk.data.model.DataProductModel
 import com.codewithfk.data.model.request.AddToCartRequest
 import com.codewithfk.data.model.request.AddressDataModel
+import com.codewithfk.data.model.request.LoginRequest
+import com.codewithfk.data.model.request.RegisterRequest
 import com.codewithfk.data.model.response.CartResponse
 import com.codewithfk.data.model.response.CartSummaryResponse
 import com.codewithfk.data.model.response.CategoriesListResponse
 import com.codewithfk.data.model.response.OrdersListResponse
 import com.codewithfk.data.model.response.PlaceOrderResponse
 import com.codewithfk.data.model.response.ProductListResponse
+import com.codewithfk.data.model.response.UserAuthResponse
+import com.codewithfk.data.model.response.UserResponse
 import com.codewithfk.domain.model.AddressDomainModel
 import com.codewithfk.domain.model.CartItemModel
 import com.codewithfk.domain.model.CartModel
@@ -18,6 +22,7 @@ import com.codewithfk.domain.model.CategoriesListModel
 import com.codewithfk.domain.model.OrdersListModel
 import com.codewithfk.domain.model.Product
 import com.codewithfk.domain.model.ProductListModel
+import com.codewithfk.domain.model.UserDomainModel
 import com.codewithfk.domain.model.request.AddCartRequestModel
 import com.codewithfk.domain.network.NetworkService
 import com.codewithfk.domain.network.ResultWrapper
@@ -56,8 +61,11 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun addProductToCart(request: AddCartRequestModel): ResultWrapper<CartModel> {
-        val url = "$baseUrl/cart/1"
+    override suspend fun addProductToCart(
+        request: AddCartRequestModel,
+        userId: Long
+    ): ResultWrapper<CartModel> {
+        val url = "$baseUrl/cart/${userId}"
         return makeWebRequest(url = url,
             method = HttpMethod.Post,
             body = AddToCartRequest.fromCartRequestModel(request),
@@ -66,8 +74,8 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun getCart(): ResultWrapper<CartModel> {
-        val url = "$baseUrl/cart/1"
+    override suspend fun getCart(userId: Long): ResultWrapper<CartModel> {
+        val url = "$baseUrl/cart/$userId"
         return makeWebRequest(url = url,
             method = HttpMethod.Get,
             mapper = { cartItem: CartResponse ->
@@ -75,8 +83,11 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun updateQuantity(cartItemModel: CartItemModel): ResultWrapper<CartModel> {
-        val url = "$baseUrl/cart/1/${cartItemModel.id}"
+    override suspend fun updateQuantity(
+        cartItemModel: CartItemModel,
+        userId: Long
+    ): ResultWrapper<CartModel> {
+        val url = "$baseUrl/cart/$userId/${cartItemModel.id}"
         return makeWebRequest(url = url,
             method = HttpMethod.Put,
             body = AddToCartRequest(
@@ -88,7 +99,7 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun deleteItem(cartItemId: Int, userId: Int): ResultWrapper<CartModel> {
+    override suspend fun deleteItem(cartItemId: Int, userId: Long): ResultWrapper<CartModel> {
         val url = "$baseUrl/cart/$userId/$cartItemId"
         return makeWebRequest(url = url,
             method = HttpMethod.Delete,
@@ -97,7 +108,7 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun getCartSummary(userId: Int): ResultWrapper<CartSummary> {
+    override suspend fun getCartSummary(userId: Long): ResultWrapper<CartSummary> {
         val url = "$baseUrl/checkout/$userId/summary"
         return makeWebRequest(url = url,
             method = HttpMethod.Get,
@@ -106,7 +117,10 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun placeOrder(address: AddressDomainModel, userId: Int): ResultWrapper<Long> {
+    override suspend fun placeOrder(
+        address: AddressDomainModel,
+        userId: Long
+    ): ResultWrapper<Long> {
         val dataModel = AddressDataModel.fromDomainAddress(address)
         val url = "$baseUrl/orders/$userId"
         return makeWebRequest(url = url,
@@ -117,12 +131,36 @@ class NetworkServiceImpl(val client: HttpClient) : NetworkService {
             })
     }
 
-    override suspend fun getOrderList(): ResultWrapper<OrdersListModel> {
-        val url = "$baseUrl/orders/1"
+    override suspend fun getOrderList(userId: Long): ResultWrapper<OrdersListModel> {
+        val url = "$baseUrl/orders/$userId"
         return makeWebRequest(url = url,
             method = HttpMethod.Get,
             mapper = { ordersResponse: OrdersListResponse ->
                 ordersResponse.toDomainResponse()
+            })
+    }
+
+    override suspend fun login(email: String, password: String): ResultWrapper<UserDomainModel> {
+        val url = "$baseUrl/login"
+        return makeWebRequest(url = url,
+            method = HttpMethod.Post,
+            body = LoginRequest(email, password),
+            mapper = { user: UserAuthResponse ->
+                user.data.toDomainModel()
+            })
+    }
+
+    override suspend fun register(
+        email: String,
+        password: String,
+        name: String
+    ): ResultWrapper<UserDomainModel> {
+        val url = "$baseUrl/signup"
+        return makeWebRequest(url = url,
+            method = HttpMethod.Post,
+            body = RegisterRequest(email, password, name),
+            mapper = { user: UserAuthResponse ->
+                user.data.toDomainModel()
             })
     }
 
