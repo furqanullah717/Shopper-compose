@@ -63,10 +63,12 @@ fun ProductDetailsScreen(
         ) {
             AsyncImage(
                 model = product.image,
+                error = painterResource(R.drawable.shoppers),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(Color.White)
                     .align(Alignment.TopCenter)
             )
 
@@ -194,9 +196,6 @@ fun ProductDetailsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         val uiState = viewModel.state.collectAsState()
-        val loading = remember {
-            mutableStateOf(false)
-        }
         LaunchedEffect(uiState.value) {
             when (uiState.value) {
                 is ProductDetailsEvent.Loading -> {

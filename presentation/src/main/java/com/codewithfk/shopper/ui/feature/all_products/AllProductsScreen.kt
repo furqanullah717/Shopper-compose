@@ -214,6 +214,7 @@ fun ProductItem(product: Product, onClick:()->Unit, onAddToCart: () -> Unit, isE
         Column(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = product.image,
+                error = painterResource(R.drawable.shoppers),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()

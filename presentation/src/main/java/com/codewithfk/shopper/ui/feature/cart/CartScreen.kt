@@ -190,6 +190,7 @@ fun CartItem(
     ) {
         AsyncImage(
             model = item.imageUrl,
+            error = painterResource(R.drawable.shoppers),
             contentDescription = null,
             modifier = Modifier
                 .size(126.dp, 96.dp)
