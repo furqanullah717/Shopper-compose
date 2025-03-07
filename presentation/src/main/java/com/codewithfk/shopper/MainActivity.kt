@@ -187,7 +187,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color.Transparent
+    ) {
         //current route
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
         val items = listOf(

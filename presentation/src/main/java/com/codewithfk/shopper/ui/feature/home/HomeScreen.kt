@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -47,14 +46,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCbrt
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.codewithfk.domain.model.Product
 import com.codewithfk.shopper.R
 import com.codewithfk.shopper.model.UiProductModel
 import com.codewithfk.shopper.navigation.AllProductsScreen
-import com.codewithfk.shopper.navigation.CartScreen
 import com.codewithfk.shopper.navigation.ProductDetails
 import org.koin.androidx.compose.koinViewModel
 
@@ -207,27 +204,19 @@ fun HomeContent(
             if (categories.isNotEmpty()) {
                 LazyRow {
                     items(categories, key = { it }) { category ->
-                        val isVisible = remember {
-                            mutableStateOf(false)
-                        }
-                        LaunchedEffect(true) {
-                            isVisible.value = true
-                        }
-                        AnimatedVisibility(
-                            visible = isVisible.value, enter = fadeIn() + expandVertically()
-                        ) {
-                            Text(
-                                text = category.replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary)
-                                    .padding(8.dp)
-                            )
-                        }
+                        /** removed animated visibility, blocking render of
+                        categories which are not in viewport of screen**/
+                        Text(
+                            text = category.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(8.dp)
+                        )
                     }
 
                 }
@@ -298,17 +287,11 @@ fun HomeProductRow(products: List<Product>, title: String, onClick: (Product) ->
         Spacer(modifier = Modifier.size(8.dp))
         LazyRow {
             items(products, key = { it.id }) { product ->
-                val isVisible = remember {
-                    mutableStateOf(false)
-                }
-                LaunchedEffect(true) {
-                    isVisible.value = true
-                }
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = isVisible.value, enter = fadeIn() + expandVertically()
-                ) {
-                    ProductItem(product = product, onClick)
-                }
+                /** removed animated visibility, blocking render of
+                products which are not in viewport of screen**/
+
+                ProductItem(product = product, onClick)
+
             }
         }
     }
@@ -316,14 +299,13 @@ fun HomeProductRow(products: List<Product>, title: String, onClick: (Product) ->
 
 
 @Composable
-fun ProductItem(product: Product, onClick: (Product) -> Unit) {
+fun ProductItem(product: Product, onClick:(Product)->Unit) {
     Card(
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .size(width = 126.dp, height = 144.dp)
             .clickable { onClick(product) },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -332,6 +314,8 @@ fun ProductItem(product: Product, onClick: (Product) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(96.dp)
+                    .background(Color.White),
+                contentScale = ContentScale.Fit
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
