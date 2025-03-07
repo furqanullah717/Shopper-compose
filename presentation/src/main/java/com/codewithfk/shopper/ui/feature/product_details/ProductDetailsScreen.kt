@@ -49,19 +49,27 @@ fun ProductDetailsScreen(
     product: UiProductModel,
     viewModel: ProductDetailsViewModel = koinViewModel()
 ) {
+    val loading = remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
         Box(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).background(Color.White)
         ) {
             AsyncImage(
                 model = product.image,
+                error = painterResource(R.drawable.shoppers),
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .align(Alignment.TopCenter)
             )
 
             Image(
@@ -71,6 +79,9 @@ fun ProductDetailsScreen(
                     .padding(16.dp)
                     .size(48.dp)
                     .clip(CircleShape)
+                    .clickable{
+                        navController.popBackStack()
+                    }
                     .background(Color.LightGray.copy(alpha = 0.4f))
                     .padding(8.dp)
                     .align(Alignment.TopStart)
@@ -151,23 +162,27 @@ fun ProductDetailsScreen(
                 }
             }
             Spacer(modifier = Modifier.size(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
+            Row(modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)) {
                 Button(
-                    onClick = { viewModel.addProductToCart(product) },
-                    modifier = Modifier.weight(1f)
+                    onClick = {
+                        viewModel.addProductToCart(product)
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = !loading.value
                 ) {
                     Text(text = "Buy Now")
                 }
                 Spacer(modifier = Modifier.size(8.dp))
                 IconButton(
-                    onClick = { viewModel.addProductToCart(product) },
+                    onClick = {
+                        viewModel.addProductToCart(product)
+                    },
                     modifier = Modifier.padding(horizontal = 16.dp),
                     colors = IconButtonDefaults.iconButtonColors()
-                        .copy(containerColor = Color.LightGray.copy(alpha = 0.4f))
+                        .copy(containerColor = Color.LightGray.copy(alpha = 0.4f)),
+                    enabled = !loading.value
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_orders),
@@ -181,9 +196,6 @@ fun ProductDetailsScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         val uiState = viewModel.state.collectAsState()
-        val loading = remember {
-            mutableStateOf(false)
-        }
         LaunchedEffect(uiState.value) {
             when (uiState.value) {
                 is ProductDetailsEvent.Loading -> {
@@ -221,7 +233,7 @@ fun ProductDetailsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -229,7 +241,8 @@ fun ProductDetailsScreen(
                 Text(
                     text = "Adding to cart...",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -238,22 +251,27 @@ fun ProductDetailsScreen(
 
 @Composable
 fun SizeItem(size: String, isSelected: Boolean, onClick: () -> Unit) {
-    Box(modifier = Modifier
-        .padding(horizontal = 4.dp)
-        .size(48.dp)
-        .clip(RoundedCornerShape(8.dp))
-        .border(
-            width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp)
-        )
-        .background(
-            if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-        )
-        .padding(8.dp)
-        .clickable { onClick() }) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 4.dp)
+            .size(48.dp)
+            .clickable { onClick() }
+            .clip(RoundedCornerShape(8.dp))
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+            )
+            .padding(8.dp)
+    ) {
         Text(
             text = size,
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )
     }
 }

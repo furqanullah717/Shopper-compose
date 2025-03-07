@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,10 +39,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.codewithfk.data.model.response.CartItem
 import com.codewithfk.domain.model.CartItemModel
 import com.codewithfk.shopper.R
 import com.codewithfk.shopper.navigation.CartSummaryScreen
@@ -97,44 +98,67 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = koinView
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = "Cart",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
             PullToRefreshContainer(
                 state = pullToRefreshState, modifier = Modifier.align(Alignment.TopCenter)
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .nestedScroll(pullToRefreshState.nestedScrollConnection)
-                    .padding(16.dp)
-            ) {
-                Text(text = "Cart", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.size(8.dp))
-                val shouldShowList = !loading.value && errorMsg.value == null
-                AnimatedVisibility(
-                    visible = shouldShowList, enter = fadeIn(), modifier = Modifier.weight(1f)
+            Box {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LazyColumn {
-                        items(cartItems.value) { item ->
-                            CartItem(item = item,
-                                onIncrement = { viewModel.incrementQuantity(it) },
-                                onDecrement = { viewModel.decrementQuantity(it) },
-                                onRemove = { viewModel.removeItem(it) })
+                    Spacer(modifier = Modifier.size(8.dp))
+                    val shouldShowList = errorMsg.value == null
+                    AnimatedVisibility(
+                        visible = shouldShowList, enter = fadeIn(), modifier = Modifier.weight(1f)
+                    ) {
+                        LazyColumn {
+                            items(cartItems.value, key = { it.id }) { item ->
+                                CartItem(
+                                    item = item,
+                                    onIncrement = { viewModel.incrementQuantity(it) },
+                                    onDecrement = { viewModel.decrementQuantity(it) },
+                                    onRemove = { viewModel.removeItem(it) },
+                                    isEnabled = !loading.value
+                                )
+                            }
+                        }
+                    }
+                    if (shouldShowList && !loading.value) {
+                        Button(
+                            onClick = {
+                                navController.navigate(CartSummaryScreen)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "Checkout")
                         }
                     }
                 }
-                if (shouldShowList) {
-                    Button(
-                        onClick = { navController.navigate(CartSummaryScreen) },
-                        modifier = Modifier.fillMaxWidth()
+                if (loading.value) {
+                    //loading screen
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(text = "Checkout")
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Refreshing Cart",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
-                }
-            }
-            if (loading.value) {
-                // Show loading
-                Column(modifier = Modifier.align(Alignment.Center)) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                    Text(text = "Loading...")
                 }
             }
             if (errorMsg.value != null) {
@@ -154,7 +178,8 @@ fun CartItem(
     item: CartItemModel,
     onIncrement: (CartItemModel) -> Unit,
     onDecrement: (CartItemModel) -> Unit,
-    onRemove: (CartItemModel) -> Unit
+    onRemove: (CartItemModel) -> Unit,
+    isEnabled: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -165,9 +190,12 @@ fun CartItem(
     ) {
         AsyncImage(
             model = item.imageUrl,
+            error = painterResource(R.drawable.shoppers),
             contentDescription = null,
-            modifier = Modifier.size(126.dp, 96.dp),
-            contentScale = ContentScale.Crop
+            modifier = Modifier
+                .size(126.dp, 96.dp)
+                .background(Color.White),
+            contentScale = ContentScale.Inside
         )
         Spacer(modifier = Modifier.size(8.dp))
         Column(
@@ -178,33 +206,52 @@ fun CartItem(
             Spacer(modifier = Modifier.size(8.dp))
             Text(
                 text = item.productName,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.size(4.dp))
             Text(
                 text = "$${item.price}",
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         }
         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.End) {
 
-            IconButton(onClick = { onRemove(item) }) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_delete), contentDescription = null
+            IconButton(
+                onClick = {
+                    onRemove(item)
+                },
+                enabled = isEnabled
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { onIncrement(item) }) {
+                IconButton(
+                    onClick = {
+                        onDecrement(item)
+                    },
+                    enabled = isEnabled
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_add), contentDescription = null
+                        painter = painterResource(id = R.drawable.ic_subtract), contentDescription = null
                     )
                 }
                 Text(text = item.quantity.toString())
-                IconButton(onClick = { onDecrement(item) }) {
+                IconButton(
+                    onClick = {
+                        onIncrement(item)
+                    },
+                    enabled = isEnabled
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_subtract),
+                        painter = painterResource(id = R.drawable.ic_add),
                         contentDescription = null
                     )
                 }
@@ -212,5 +259,4 @@ fun CartItem(
             }
         }
     }
-
 }

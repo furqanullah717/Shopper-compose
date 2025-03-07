@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -37,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.codewithfk.domain.model.CartItemModel
 import com.codewithfk.domain.model.CartSummary
-import com.codewithfk.shopper.BottomNavItems
 import com.codewithfk.shopper.R
 import com.codewithfk.shopper.model.UserAddress
 import com.codewithfk.shopper.navigation.HomeScreen
@@ -247,9 +247,10 @@ fun AddressBar(address: String, onClick: () -> Unit) {
             .clickable { onClick.invoke() }
             .padding(8.dp)
     ) {
-
         Image(
-            painter = painterResource(id = R.drawable.ic_address), contentDescription = null,
+            painter = painterResource(id = R.drawable.ic_address),
+            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
+            contentDescription = null,
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
