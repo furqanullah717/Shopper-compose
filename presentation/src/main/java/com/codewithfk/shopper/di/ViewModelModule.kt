@@ -2,6 +2,7 @@ package com.codewithfk.shopper.di
 
 import com.codewithfk.shopper.ui.feature.account.login.LoginViewModel
 import com.codewithfk.shopper.ui.feature.account.register.RegisterViewModel
+import com.codewithfk.shopper.ui.feature.all_products.AllProductsViewModel
 import com.codewithfk.shopper.ui.feature.cart.CartViewModel
 import com.codewithfk.shopper.ui.feature.home.HomeViewModel
 import com.codewithfk.shopper.ui.feature.orders.OrdersViewModel
@@ -33,5 +34,8 @@ val viewModelModule = module {
 
     viewModel {
         RegisterViewModel(get(),get())
+    }
+    viewModel {
+        AllProductsViewModel(get(), get(), get())
     }
 }
