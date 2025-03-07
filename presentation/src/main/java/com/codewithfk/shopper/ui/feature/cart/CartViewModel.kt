@@ -3,7 +3,6 @@ package com.codewithfk.shopper.ui.feature.cart
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codewithfk.domain.model.CartItemModel
-import com.codewithfk.domain.model.CartModel
 import com.codewithfk.domain.usecase.DeleteProductUseCase
 import com.codewithfk.domain.usecase.GetCartUseCase
 import com.codewithfk.domain.usecase.UpdateQuantityUseCase
@@ -71,7 +70,7 @@ class CartViewModel(
     fun removeItem(cartItem: CartItemModel) {
         viewModelScope.launch {
             _uiState.value = CartEvent.Loading
-            val result = deleteItem.execute(cartItem.id, 1)
+            val result = deleteItem.execute(cartItem.id, userDomainModel!!.id!!.toLong())
             when (result) {
                 is com.codewithfk.domain.network.ResultWrapper.Success -> {
                     _uiState.value = CartEvent.Success(result.value.data)
