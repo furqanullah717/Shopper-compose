@@ -48,7 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 fun AllProductsScreen(
     navController: NavController, viewModel: AllProductsViewModel = koinViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsState()
+    val uiState = viewModel.uiEvent.collectAsState()
     val state = viewModel.state.collectAsState()
 
     val uiLoading = remember {

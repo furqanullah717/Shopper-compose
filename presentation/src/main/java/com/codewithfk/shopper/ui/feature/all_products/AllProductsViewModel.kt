@@ -20,7 +20,7 @@ class AllProductsViewModel(
 ) : ViewModel(){
 
     private val _uiEvent = MutableStateFlow<AllProductsScreenUIEvents>(AllProductsScreenUIEvents.Loading)
-    val uiState = _uiEvent.asStateFlow()
+    val uiEvent = _uiEvent.asStateFlow()
 
     private val _state = MutableStateFlow<AllProductsScreenCartUIEvents>(AllProductsScreenCartUIEvents.Nothing)
     val state = _state.asStateFlow()
