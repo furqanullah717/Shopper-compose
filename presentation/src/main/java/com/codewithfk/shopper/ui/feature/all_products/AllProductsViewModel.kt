@@ -19,8 +19,8 @@ class AllProductsViewModel(
     private val shopperSession: ShopperSession
 ) : ViewModel(){
 
-    private val _uiState = MutableStateFlow<AllProductsScreenUIEvents>(AllProductsScreenUIEvents.Loading)
-    val uiState = _uiState.asStateFlow()
+    private val _uiEvent = MutableStateFlow<AllProductsScreenUIEvents>(AllProductsScreenUIEvents.Loading)
+    val uiState = _uiEvent.asStateFlow()
 
     private val _state = MutableStateFlow<AllProductsScreenCartUIEvents>(AllProductsScreenCartUIEvents.Nothing)
     val state = _state.asStateFlow()
@@ -31,13 +31,13 @@ class AllProductsViewModel(
 
     private fun getAllProducts() {
         viewModelScope.launch {
-            _uiState.value = AllProductsScreenUIEvents.Loading
+            _uiEvent.value = AllProductsScreenUIEvents.Loading
             val products = getProducts()
             if (products.isEmpty()) {
-                _uiState.value = AllProductsScreenUIEvents.Error("Failed to load products")
+                _uiEvent.value = AllProductsScreenUIEvents.Error("Failed to load products")
                 return@launch
             }
-            _uiState.value = AllProductsScreenUIEvents.Success(products)
+            _uiEvent.value = AllProductsScreenUIEvents.Success(products)
         }
     }
 
