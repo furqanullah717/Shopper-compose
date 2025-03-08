@@ -1,10 +1,12 @@
 package com.codewithfk.shopper.model
 
+import android.annotation.SuppressLint
 import android.os.Parcelable
 import com.codewithfk.domain.model.Product
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 @Parcelize
 data class UiProductModel(
@@ -14,7 +16,7 @@ data class UiProductModel(
     val categoryId: Int,
     val description: String,
     val image: String
-) : Parcelable {
+) : Parcelable{
     companion object {
         fun fromProduct(product: Product) = UiProductModel(
             id = product.id,
@@ -25,5 +27,4 @@ data class UiProductModel(
             image = product.image
         )
     }
-
 }

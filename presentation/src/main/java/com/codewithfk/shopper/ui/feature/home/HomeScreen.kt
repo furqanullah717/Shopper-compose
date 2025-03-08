@@ -1,8 +1,6 @@
 package com.codewithfk.shopper.ui.feature.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,16 +42,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCbrt
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.codewithfk.domain.model.Product
 import com.codewithfk.shopper.R
 import com.codewithfk.shopper.model.UiProductModel
-import com.codewithfk.shopper.navigation.CartScreen
+import com.codewithfk.shopper.navigation.AllProductsScreen
 import com.codewithfk.shopper.navigation.ProductDetails
 import org.koin.androidx.compose.koinViewModel
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinViewModel()) {
     val uiState = viewModel.uiState.collectAsState()
@@ -80,7 +76,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding()
                 .testTag("homeScreen")
         ) {
             when (uiState.value) {
@@ -113,8 +109,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
                 onClick = {
                     navController.navigate(ProductDetails(UiProductModel.fromProduct(it)))
                 },
-                onCartClicked = {
-                    navController.navigate(CartScreen)
+                onProducts = {
+                    navController.navigate(AllProductsScreen)
                 }
             )
         }
@@ -122,7 +118,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = koinView
 }
 
 @Composable
-fun ProfileHeader(onCartClicked: () -> Unit) {
+fun ProfileHeader(onProducts: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -154,30 +150,19 @@ fun ProfileHeader(onCartClicked: () -> Unit) {
                 .align(Alignment.CenterEnd)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.notificatino),
+                painter = painterResource(id = R.drawable.shoppers),
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray.copy(alpha = 0.3f))
-                    .padding(8.dp),
-                contentScale = ContentScale.Inside
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_cart),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray.copy(alpha = 0.3f))
-                    .padding(8.dp)
-                    .clickable {
-                        onCartClicked()
-                    },
-                contentScale = ContentScale.Inside
+                    .clickable{
+                        onProducts()
+                    }
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(4.dp),
+                contentScale = ContentScale.Fit
             )
         }
-
     }
 }
 
@@ -189,11 +174,11 @@ fun HomeContent(
     isLoading: Boolean = false,
     errorMsg: String? = null,
     onClick: (Product) -> Unit,
-    onCartClicked: () -> Unit
+    onProducts: () -> Unit
 ) {
     LazyColumn {
         item {
-            ProfileHeader(onCartClicked)
+            ProfileHeader(onProducts)
             Spacer(modifier = Modifier.size(16.dp))
             SearchBar(value = "", onTextChanged = {})
             Spacer(modifier = Modifier.size(16.dp))
@@ -215,27 +200,19 @@ fun HomeContent(
             if (categories.isNotEmpty()) {
                 LazyRow {
                     items(categories, key = { it }) { category ->
-                        val isVisible = remember {
-                            mutableStateOf(false)
-                        }
-                        LaunchedEffect(true) {
-                            isVisible.value = true
-                        }
-                        AnimatedVisibility(
-                            visible = isVisible.value, enter = fadeIn() + expandVertically()
-                        ) {
-                            Text(
-                                text = category.replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary)
-                                    .padding(8.dp)
-                            )
-                        }
+                        /** removed animated visibility, blocking render of
+                        categories which are not in viewport of screen**/
+                        Text(
+                            text = category.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(8.dp)
+                        )
                     }
 
                 }
@@ -302,29 +279,15 @@ fun HomeProductRow(products: List<Product>, title: String, onClick: (Product) ->
                 ),
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = "View all",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(
-                    Alignment.CenterEnd
-                )
-            )
         }
         Spacer(modifier = Modifier.size(8.dp))
         LazyRow {
             items(products, key = { it.id }) { product ->
-                val isVisible = remember {
-                    mutableStateOf(false)
-                }
-                LaunchedEffect(true) {
-                    isVisible.value = true
-                }
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = isVisible.value, enter = fadeIn() + expandVertically()
-                ) {
-                    ProductItem(product = product, onClick)
-                }
+                /** removed animated visibility, blocking render of
+                products which are not in viewport of screen**/
+
+                ProductItem(product = product, onClick)
+
             }
         }
     }
@@ -332,14 +295,13 @@ fun HomeProductRow(products: List<Product>, title: String, onClick: (Product) ->
 
 
 @Composable
-fun ProductItem(product: Product, onClick: (Product) -> Unit) {
+fun ProductItem(product: Product, onClick:(Product)->Unit) {
     Card(
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .size(width = 126.dp, height = 144.dp)
             .clickable { onClick(product) },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -348,6 +310,8 @@ fun ProductItem(product: Product, onClick: (Product) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(96.dp)
+                    .background(Color.White),
+                contentScale = ContentScale.Fit
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(

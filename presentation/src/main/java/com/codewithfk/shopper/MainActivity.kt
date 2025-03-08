@@ -6,10 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,6 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.codewithfk.shopper.model.UiProductModel
+import com.codewithfk.shopper.navigation.AllProductsScreen
 import com.codewithfk.shopper.navigation.CartScreen
 import com.codewithfk.shopper.navigation.CartSummaryScreen
 import com.codewithfk.shopper.navigation.HomeScreen
@@ -45,6 +51,7 @@ import com.codewithfk.shopper.navigation.productNavType
 import com.codewithfk.shopper.navigation.userAddressNavType
 import com.codewithfk.shopper.ui.feature.account.login.LoginScreen
 import com.codewithfk.shopper.ui.feature.account.register.RegisterScreen
+import com.codewithfk.shopper.ui.feature.all_products.AllProductsScreen
 import com.codewithfk.shopper.ui.feature.cart.CartScreen
 import com.codewithfk.shopper.ui.feature.home.HomeScreen
 import com.codewithfk.shopper.ui.feature.orders.OrdersScreen
@@ -61,6 +68,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val shopperSession : ShopperSession by inject()
+            val shouldShowFab = remember{
+                mutableStateOf(true)
+            }
             ShopperTheme {
                 val shouldShowBottomNav = remember {
                     mutableStateOf(true)
@@ -73,7 +83,23 @@ class MainActivity : ComponentActivity() {
                             BottomNavigationBar(navController)
                         }
 
-                    }
+                    },
+                    floatingActionButton = {
+                        AnimatedVisibility(visible = shouldShowFab.value, enter = fadeIn(), exit = fadeOut()) {
+                            FloatingActionButton(
+                                onClick = {
+                                    navController.navigate(CartScreen)
+                                },
+                                shape = CircleShape,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_cart),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    },
+                    floatingActionButtonPosition = FabPosition.End
                 ) {
                     Surface(
                         modifier = Modifier
@@ -92,38 +118,51 @@ class MainActivity : ComponentActivity() {
 
                             composable<LoginScreen> {
                                 shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 LoginScreen(navController)
                             }
                             composable<RegisterScreen> {
                                 shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 RegisterScreen(navController)
                             }
                             composable<HomeScreen> {
                                 HomeScreen(navController)
+                                shouldShowFab.value = true
                                 shouldShowBottomNav.value = true
                             }
+                            composable<AllProductsScreen>{
+                                AllProductsScreen(navController)
+                                shouldShowBottomNav.value = false
+                                shouldShowFab.value = true
+                            }
                             composable<CartScreen> {
-                                shouldShowBottomNav.value = true
+                                shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 CartScreen(navController)
                             }
                             composable<OrdersScreen> {
+                                shouldShowFab.value = false
                                 shouldShowBottomNav.value = true
                                 OrdersScreen()
                             }
                             composable<ProfileScreen> {
                                 shouldShowBottomNav.value = true
+                                shouldShowFab.value = false
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     Text(text = "Profile")
                                 }
                             }
                             composable<CartSummaryScreen> {
                                 shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 CartSummaryScreen(navController = navController)
                             }
                             composable<ProductDetails>(
                                 typeMap = mapOf(typeOf<UiProductModel>() to productNavType)
                             ) {
                                 shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 val productRoute = it.toRoute<ProductDetails>()
                                 ProductDetailsScreen(navController, productRoute.product)
                             }
@@ -131,6 +170,7 @@ class MainActivity : ComponentActivity() {
                                 typeMap = mapOf(typeOf<UserAddressRouteWrapper>() to userAddressNavType)
                             ) {
                                 shouldShowBottomNav.value = false
+                                shouldShowFab.value = false
                                 val userAddressRoute = it.toRoute<UserAddressRoute>()
                                 UserAddressScreen(
                                     navController = navController,
@@ -147,7 +187,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color.Transparent
+    ) {
         //current route
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
         val items = listOf(
