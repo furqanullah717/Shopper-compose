@@ -56,6 +56,7 @@ import com.codewithfk.shopper.ui.feature.cart.CartScreen
 import com.codewithfk.shopper.ui.feature.home.HomeScreen
 import com.codewithfk.shopper.ui.feature.orders.OrdersScreen
 import com.codewithfk.shopper.ui.feature.product_details.ProductDetailsScreen
+import com.codewithfk.shopper.ui.feature.profile.ProfileScreen
 import com.codewithfk.shopper.ui.feature.summary.CartSummaryScreen
 import com.codewithfk.shopper.ui.feature.user_address.UserAddressScreen
 import com.codewithfk.shopper.ui.theme.ShopperTheme
@@ -149,9 +150,7 @@ class MainActivity : ComponentActivity() {
                             composable<ProfileScreen> {
                                 shouldShowBottomNav.value = true
                                 shouldShowFab.value = false
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Text(text = "Profile")
-                                }
+                                ProfileScreen(navController)
                             }
                             composable<CartSummaryScreen> {
                                 shouldShowBottomNav.value = false

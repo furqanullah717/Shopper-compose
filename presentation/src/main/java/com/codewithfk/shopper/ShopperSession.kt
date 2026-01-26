@@ -31,4 +31,14 @@ class ShopperSession(private val context: Context) {
             null
         }
     }
+
+    fun deleteUser() {
+        val sharedPref = context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+    }
+
+
 }
